@@ -85,7 +85,7 @@ DATABASES = {
         'NAME': 'dailyfresh',
         'USER': 'root',
         'PASSWORD': 'admin',
-        'HOST': '10.16.1.224',
+        'HOST': '192.168.31.233',
         'PORT': 3306
     }
 }
@@ -109,6 +109,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# django 认证系统使用的模型类
+AUTH_USER_MODEL = 'user.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/

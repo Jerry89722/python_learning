@@ -12,14 +12,15 @@ class User(AbstractUser, BaseModel):
         info = {'confirm': self.id}
         token = serializer.dump(info)
         return token
+
     class Meta:
         db_table = 'df_user'
         verbose_name = 'user'
         verbose_name_plural = verbose_name
 
 
-class Adress(BaseModel):
-    user = models.ForeignKey('User', verbose_name='acc_belong_to')
+class Address(BaseModel):
+    user = models.ForeignKey('user', on_delete=models.CASCADE, verbose_name='acc_belong_to')
     receiver = models.CharField(max_length=20, verbose_name='receiver')
     addr = models.CharField(max_length=256, verbose_name='receiver_addr')
     zip_code = models.CharField(max_length=6, null=True, verbose_name='post_code')
