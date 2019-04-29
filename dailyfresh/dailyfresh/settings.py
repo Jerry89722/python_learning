@@ -137,3 +137,21 @@ TINYMCE_DEFAULT_CONFIG = {
     'width': 600,
     'height': 400,
 }
+
+
+# 邮件配置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# smtp service address and port
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 25
+# sender's address
+EMAIL_HOST_USER = 'jerry94264@qq.com'
+# email's author code
+EMAIL_HOST_PASSWORD = 'ttjkunqeboxkcbag'
+
+EMAIL_SUBJECT_PREFIX = u'Jerry'            # 为邮件Subject-line前缀,默认是'[django]'
+EMAIL_USE_TLS = True                            # 与SMTP服务器通信时，是否启动TLS链接(安全链接)。默认是false
+# 管理员站点
+SERVER_EMAIL = 'zhangjie89722@163.com'
+
+EMAIL_FROM = 'Jerry<jerry94264@qq.com>'
