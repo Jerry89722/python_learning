@@ -155,3 +155,18 @@ EMAIL_USE_TLS = True                            # 与SMTP服务器通信时，�
 SERVER_EMAIL = 'zhangjie89722@163.com'
 
 EMAIL_FROM = 'Jerry<jerry94264@qq.com>'
+
+# Django cache settings
+CACHES = {
+    'default':{
+        'BACKEND': "django_redis.cache.RedisCache",
+        'LOCATION': "redis://127.0.0.1:6379/1",
+        'OPTIONS': {
+            'CLIENT_CLASS': "redis_django.client.DefaultClient",
+        }
+    }
+}
+
+# config sessions store
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = 'default'

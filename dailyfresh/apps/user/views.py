@@ -3,9 +3,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import View
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from django.core.mail import send_mail
 from django.conf import settings
 from itsdangerous import SignatureExpired
+from django.contrib.auth import authenticate, login
 import re
 
 from user.models import User
@@ -126,4 +126,23 @@ class LoginView(View):
     def get(self, request):
         return render(request, 'login.html')
 
+    def post(self, request):
+        # 接收数据
+        username = request.POST.get('username')
+        pwd = request.POST.get('pwd')
+        remember = request.POST.get('remember')
 
+        # 校验数据
+        if not all([username, pwd, remember]):
+            return render(request, 'login.html', {'errmsg': '数据不完整'})
+        # 业务处理
+        user = authenticate(username=username, password=pwd)
+        if user is not None:
+            if user.is_active:
+                login(request, user )
+                return redirect(reverse('goods:index'))
+            else:
+                return render(request, 'login.html', {'errmsg': '账号未激活'})
+        else:
+            return render(request, 'login.html', {'errmsg': '账号或密码不正确'})
+        # 返回应答
