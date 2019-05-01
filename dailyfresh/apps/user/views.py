@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import View
+from django.core.mail import send_mail
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from django.conf import settings
 from itsdangerous import SignatureExpired
@@ -94,13 +95,13 @@ class RegisterView(View):
         token = serializer.dumps(info).decode()
 
         # send active email
-        send_register_active_email.delay(email, username, token)
-        # subject = "welcom daily fresh"
-        # msg = ''
-        # html_msg = "<h1>%s, welcom to daily fresh</h1>please click the link to active your account<br/><a href='http://127.0.0.1:8000/user/active/%s'>http://127.0.0.1:8000/user/active/%s</a>" % (username, token, token)
-        # sender = settings.EMAIL_HOST_USER
-        # receivers = [email]
-        # send_mail(subject, msg, sender, receivers, html_message=html_msg)
+        # send_register_active_email.delay(email, username, token)
+        subject = "welcom daily fresh"
+        msg = ''
+        html_msg = "<h1>%s, welcom to daily fresh</h1>please click the link to active your account<br/><a href='http://127.0.0.1:8000/user/active/%s'>http://127.0.0.1:8000/user/active/%s</a>" % (username, token, token)
+        sender = settings.EMAIL_HOST_USER
+        receivers = [email]
+        send_mail(subject, msg, sender, receivers, html_message=html_msg)
 
         return redirect(reverse('goods:index'))
 
@@ -109,6 +110,7 @@ class ActiveView(View):
     def get(self, request, token):
 
         serializer = Serializer(settings.SECRET_KEY, 3600)
+
 
         try:
             info = serializer.loads(token)
@@ -124,7 +126,13 @@ class ActiveView(View):
 
 class LoginView(View):
     def get(self, request):
-        return render(request, 'login.html')
+        if 'username' in request.COOKIES:
+            username = request.COOKIES['username']
+            checked = 'checked'
+        else:
+            username = ''
+            checked = ''
+        return render(request, 'login.html', {'username': username, 'checked': checked})
 
     def post(self, request):
         # 接收数据
@@ -133,16 +141,38 @@ class LoginView(View):
         remember = request.POST.get('remember')
 
         # 校验数据
-        if not all([username, pwd, remember]):
+        if not all([username, pwd]):
             return render(request, 'login.html', {'errmsg': '数据不完整'})
         # 业务处理
         user = authenticate(username=username, password=pwd)
         if user is not None:
             if user.is_active:
-                login(request, user )
-                return redirect(reverse('goods:index'))
+                login(request, user)
+                response = redirect(reverse('goods:index'))
+                remember = request.POST.get('remember')
+                if remember == 'on':
+                    response.set_cookie('username', username, 7*24*3600)
+                else:
+                    response.delete_cookie('username')
+
+                return response
             else:
                 return render(request, 'login.html', {'errmsg': '账号未激活'})
         else:
             return render(request, 'login.html', {'errmsg': '账号或密码不正确'})
-        # 返回应答
+
+
+class UserInfoView(View):
+    def get(self, request):
+        return render(request, 'user_center_info.html')
+
+
+class UserOrderView(View):
+    def get(self, request):
+        return render(request, 'user_center_order.html')
+
+
+class AddressView(View):
+    def get(self, request):
+        return render(request, 'user_center_site.html')
+

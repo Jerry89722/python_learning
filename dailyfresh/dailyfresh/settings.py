@@ -85,7 +85,7 @@ DATABASES = {
         'NAME': 'dailyfresh',
         'USER': 'root',
         'PASSWORD': 'admin',
-        'HOST': '192.168.31.233',
+        'HOST': '10.16.1.224',
         'PORT': 3306
     }
 }
@@ -162,7 +162,7 @@ CACHES = {
         'BACKEND': "django_redis.cache.RedisCache",
         'LOCATION': "redis://127.0.0.1:6379/1",
         'OPTIONS': {
-            'CLIENT_CLASS': "redis_django.client.DefaultClient",
+            'CLIENT_CLASS': "django_redis.client.DefaultClient",
         }
     }
 }
