@@ -158,7 +158,7 @@ EMAIL_FROM = 'Jerry<jerry94264@qq.com>'
 
 # Django cache settings
 CACHES = {
-    'default':{
+    'default': {
         'BACKEND': "django_redis.cache.RedisCache",
         'LOCATION': "redis://127.0.0.1:6379/1",
         'OPTIONS': {
@@ -170,3 +170,5 @@ CACHES = {
 # config sessions store
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = 'default'
+
+LOGIN_URL = '/user/login'

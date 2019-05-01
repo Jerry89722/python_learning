@@ -9,6 +9,7 @@ from itsdangerous import SignatureExpired
 from django.contrib.auth import authenticate, login
 import re
 
+from utils.mixin import LoginRequiredMixin
 from user.models import User
 from celery_tasks.tasks import send_register_active_email
 # Create your views here.
@@ -162,17 +163,22 @@ class LoginView(View):
             return render(request, 'login.html', {'errmsg': '账号或密码不正确'})
 
 
-class UserInfoView(View):
+class UserInfoView(LoginRequiredMixin, View):
     def get(self, request):
         return render(request, 'user_center_info.html')
 
+    # @classmethod
+    # def as_view(cls, **initkwargs):
+    #     view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
+    #     return login_required(view)
 
-class UserOrderView(View):
+
+class UserOrderView(LoginRequiredMixin, View):
     def get(self, request):
         return render(request, 'user_center_order.html')
 
 
-class AddressView(View):
+class AddressView(LoginRequiredMixin, View):
     def get(self, request):
         return render(request, 'user_center_site.html')
 
