@@ -85,11 +85,10 @@ DATABASES = {
         'NAME': 'dailyfresh',
         'USER': 'root',
         'PASSWORD': 'admin',
-        'HOST': '10.16.1.224',
+        'HOST': '127.0.0.1',
         'PORT': 3306
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -156,7 +155,7 @@ SERVER_EMAIL = 'zhangjie89722@163.com'
 
 EMAIL_FROM = 'Jerry<jerry94264@qq.com>'
 
-# Django cache settings
+# Djangche settings
 CACHES = {
     'default': {
         'BACKEND': "django_redis.cache.RedisCache",
@@ -172,3 +171,5 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = 'default'
 
 LOGIN_URL = '/user/login'
+
+DEFAULT_FILE_STORAGE = 'utils.fdfs.storage.FDFSStorage'

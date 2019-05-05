@@ -6,11 +6,15 @@ from django.core.mail import send_mail
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from django.conf import settings
 from itsdangerous import SignatureExpired
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django_redis import get_redis_connection
 import re
 
 from utils.mixin import LoginRequiredMixin
-from user.models import User
+
+from user.models import User, Address
+from goods.models import GoodsSKU
+
 from celery_tasks.tasks import send_register_active_email
 # Create your views here.
 
@@ -112,7 +116,6 @@ class ActiveView(View):
 
         serializer = Serializer(settings.SECRET_KEY, 3600)
 
-
         try:
             info = serializer.loads(token)
             user_id = info['confirm']
@@ -149,7 +152,7 @@ class LoginView(View):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                response = redirect(reverse('goods:index'))
+                response = redirect(reverse('user:user'))
                 remember = request.POST.get('remember')
                 if remember == 'on':
                     response.set_cookie('username', username, 7*24*3600)
@@ -163,22 +166,85 @@ class LoginView(View):
             return render(request, 'login.html', {'errmsg': '账号或密码不正确'})
 
 
+class LogoutView(View):
+    def get(self, request):
+        logout(request)
+        return redirect(reverse("goods:index"))
+
+
 class UserInfoView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, 'user_center_info.html')
+        address = Address.objects.get_default_address(request.user)
+
+        # get history browses
+        con = get_redis_connection('default')
+        history_key = 'history_%d' % request.user.id
+        sku_ids = con.lrange(history_key, 0, 4)
+        goods_li = list()
+        for id in sku_ids:
+            goods = GoodsSKU.objects.get(id=id)
+            goods_li.append(goods)
+
+        context = {'page': 'user', 'address': address, 'goods_li': goods_li}
+
+        return render(request, 'user_center_info.html', context)
 
     # @classmethod
-    # def as_view(cls, **initkwargs):
+    # def as_view(cls, **initkwargs):     from LoginRequiredMixin
     #     view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
     #     return login_required(view)
+
+    # def as_view():     from View
 
 
 class UserOrderView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, 'user_center_order.html')
+        return render(request, 'user_center_order.html', {'page': 'order'})
 
 
 class AddressView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, 'user_center_site.html')
+        # try:
+        #     address = Address.objects.get(user=request.user, is_default=True)
+        # except Address.DoesNotExist:
+        #     address = None
+        address = Address.objects.get_default_address(request.user)
+        return render(request, 'user_center_site.html', {'page': 'address', 'address': address})
+
+    def post(self, request):
+        # recv datas
+        receiver = request.POST.get('receiver')
+        addr = request.POST.get('address')
+        zip_code = request.POST.get('zip_code')
+        phone = request.POST.get('phone')
+
+        # verify datas
+        if not all([receiver, addr, phone]):
+            return render(request, 'user_center_site.html', {'errmsg': "address info incorrect"})
+        # verify phone num
+        if not re.match(r'^1[3|4|5|7|8][0-9]{9}$', phone):
+            return render(request, 'user_center_site.html', {'errmsg': "please check your phone num"})
+        # handle datas
+        user = request.user
+        # try:
+        #     address = Address.objects.get(user=user, is_default=True)
+        # except Address.DoesNotExist:
+        #     address = None
+
+        address = Address.objects.get_default_address(user)
+
+        if address:
+            is_default = False
+        else:
+            is_default = True
+
+        Address.objects.create(user=user,
+                               receiver=receiver,
+                               addr=addr,
+                               zip_code=zip_code,
+                               phone=phone,
+                               is_default=is_default)
+        # return request
+        return redirect(reverse("user:address"))
+
 

@@ -19,6 +19,16 @@ class User(AbstractUser, BaseModel):
         verbose_name_plural = verbose_name
 
 
+class AddressManager(models.Manager):
+    def get_default_address(self, user):
+        try:
+            def_addr = self.get(user=user, is_default=True)
+        except self.model.DoesNotExist:
+            def_addr = None
+
+        return def_addr
+
+
 class Address(BaseModel):
     user = models.ForeignKey('user', on_delete=models.CASCADE, verbose_name='acc_belong_to')
     receiver = models.CharField(max_length=20, verbose_name='receiver')
@@ -26,6 +36,8 @@ class Address(BaseModel):
     zip_code = models.CharField(max_length=6, null=True, verbose_name='post_code')
     phone = models.CharField(max_length=11, verbose_name='phone_number')
     is_default = models.BooleanField(default=False, verbose_name='is_default')
+
+    objects = AddressManager()
 
     class Meta:
         db_table = 'df_address'
