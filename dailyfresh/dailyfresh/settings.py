@@ -173,3 +173,7 @@ SESSION_CACHE_ALIAS = 'default'
 LOGIN_URL = '/user/login'
 
 DEFAULT_FILE_STORAGE = 'utils.fdfs.storage.FDFSStorage'
+
+FDFS_CLIENT_CONF = './utils/fdfs/client.conf'
+
+FDFS_URL = 'http://127.0.0.1:8888/'
